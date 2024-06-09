@@ -1,0 +1,12 @@
+pip install requests
+!pip install googletrans==4.0.0-rc1
+
+from googletrans import Translator
+
+def translate(text, target_language='te'):
+    translator = Translator()
+    result = translator.translate(text, dest=target_language)
+    return result.text
+text = "Bonjour, comment ça va?"
+translated_text = translate(text, target_language='te')
+print(translated_text)
