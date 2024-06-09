@@ -1,0 +1,29 @@
+import openai
+import requests
+import json
+import numpy as np
+import PIL.Image
+import io
+
+# Set up OpenAI API client
+openai.api_key = "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"
+
+# Define keywords for the image
+keywords = "participating in hackathon"
+
+# Generate image using OpenAI DALL-E API
+response = openai.Image.create(
+  prompt=keywords,
+  n=1,
+  size="256x256"
+)
+
+# Extract image from response
+image_url = response['data'][0]['url']
+image_content = requests.get(image_url).content
+image = PIL.Image.open(io.BytesIO(image_content))
+
+# Display or save the image
+image.show()
+# or
+image.save("generated_image.jpg")
