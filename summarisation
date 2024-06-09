@@ -1,0 +1,69 @@
+from google.cloud import language_v1
+
+def authenticate_with_api_key(quota_project_id: str, api_key_string: str) -> None:
+    """
+    Authenticates with an API key for Google Language service.
+
+    TODO(Developer): Replace these variables before running the sample.
+
+    Args:
+        quota_project_id: Google Cloud project id that should be used for quota and billing purposes.
+        api_key_string: The API key to authenticate to the service.
+    """
+
+    # Initialize the Language Service client and set the API key and the quota project id.
+    client = language_v1.LanguageServiceClient(client_options={"api_key": api_key_string,
+                                                               "quota_project_id": quota_project_id})
+
+    text = "Hello, world!"
+    document = language_v1.Document(
+        content=text, type_=language_v1.Document.Type.PLAIN_TEXT
+    )
+
+    # Make a request to analyze the sentiment of the text.
+    sentiment = client.analyze_sentiment(
+        request={"document": document}
+    ).document_sentiment
+
+    print(f"Text: {text}")
+    print(f"Sentiment: {sentiment.score}, {sentiment.magnitude}")
+    print("Successfully authenticated using the API key")
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize, sent_tokenize
+from heapq import nlargest
+nltk.download('stopwords')
+nltk.download('punkt')
+
+def summarize(text, n):
+    # Tokenize the text into sentences and words
+    sentences = sent_tokenize(text)
+    words = word_tokenize(text.lower())
+
+    # Remove stopwords
+    stop_words = set(stopwords.words('english'))
+    words = [word for word in words if word not in stop_words]
+
+    # Compute word frequencies
+    freq_dist = nltk.FreqDist(words)
+
+    # Compute sentence scores based on word frequencies
+    sentence_scores = {}
+    for sentence in sentences:
+        for word in word_tokenize(sentence.lower()):
+            if word in freq_dist:
+                if len(sentence.split()) < 30:
+                    if sentence not in sentence_scores:
+                        sentence_scores[sentence] = freq_dist[word]
+                    else:
+                        sentence_scores[sentence] += freq_dist[word]
+
+    # Get the top n sentences with highest scores
+    summary_sentences = nlargest(n, sentence_scores, key=sentence_scores.get)
+    summary = ' '.join(summary_sentences)
+    return summary
+
+text = "On a beautiful summer day, Alice and her friend Bob decided to go on a hike in the nearby mountains. They packed a picnic lunch and set off early in the morning. As they hiked up the trail, they enjoyed the stunning views of the valleys below and the clear blue sky above. After a few hours of hiking, they reached the summit of the mountain and sat down to enjoy their lunch. As they ate, they chatted about their lives and plans for the future. Eventually, they packed up their things and made their way back down the mountain, feeling tired but happy."
+
+summary = summarize(text, 2)
+print(summary)
